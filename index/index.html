@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Calculadora de Semijoias</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      max-width: 500px;
+      margin: auto;
+      background-color: #f8f8f8;
+    }
+    h1 {
+      text-align: center;
+      color: #d4af37;
+    }
+    label, input {
+      display: block;
+      width: 100%;
+      margin: 10px 0;
+    }
+    button {
+      background-color: #d4af37;
+      color: white;
+      padding: 10px;
+      border: none;
+      cursor: pointer;
+      width: 100%;
+      font-size: 16px;
+    }
+    #resultado {
+      margin-top: 20px;
+      background-color: #fff;
+      padding: 15px;
+      border-radius: 5px;
+      text-align: center;
+      font-size: 18px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Calculadora A Gata Semijoias</h1>
+
+  <label for="custo">Custo da peça (R$):</label>
+  <input type="number" id="custo" step="0.01">
+
+  <label for="lucro">Porcentagem de lucro (%):</label>
+  <input type="number" id="lucro" step="1">
+
+  <label for="embalagem">Custo da embalagem (R$):</label>
+  <input type="number" id="embalagem" step="0.01">
+
+  <label for="taxas">Outros custos (ex: taxas) (R$):</label>
+  <input type="number" id="taxas" step="0.01">
+
+  <button onclick="calcular()">Calcular Preço Final</button>
+
+  <div id="resultado"></div>
+
+  <script>
+    function calcular() {
+      const custo = parseFloat(document.getElementById("custo").value) || 0;
+      const lucro = parseFloat(document.getElementById("lucro").value) || 0;
+      const embalagem = parseFloat(document.getElementById("embalagem").value) || 0;
+      const taxas = parseFloat(document.getElementById("taxas").value) || 0;
+
+      const valorLucro = custo * (lucro / 100);
+      const precoFinal = custo + valorLucro + embalagem + taxas;
+
+      document.getElementById("resultado").innerHTML =
+        `<strong>Preço final sugerido: R$ ${precoFinal.toFixed(2)}</strong>`;
+    }
+  </script>
+</body>
+</html>
