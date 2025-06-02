@@ -29,6 +29,17 @@
       margin: 8px 0;
       box-sizing: border-box;
     }
+    button {
+      background-color: #d4af37;
+      border: none;
+      color: white;
+      cursor: pointer;
+      border-radius: 5px;
+      font-weight: bold;
+    }
+    button:hover {
+      background-color: #b8992f;
+    }
     table {
       width: 100%;
       border-collapse: collapse;
@@ -44,15 +55,8 @@
     .entrada { color: green; }
     .saida { color: red; }
     .acoes button {
-      background-color: #d4af37;
-      color: white;
-      border: none;
       padding: 5px 10px;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-    .acoes button:hover {
-      background-color: #b8992f;
+      font-size: 14px;
     }
   </style>
 </head>
@@ -68,6 +72,7 @@
       <option value="saida">Saída</option>
     </select>
     <button onclick="adicionarLancamento()">Adicionar Lançamento</button>
+    <button onclick="exportarLancamentos()">Exportar para CSV</button>
 
     <table>
       <thead>
@@ -88,7 +93,7 @@
   <script>
     let lancamentos = [];
 
-    // Carregar dados salvos ao iniciar
+    // Carregar dados salvos
     window.onload = function () {
       const dadosSalvos = localStorage.getItem("lancamentos");
       if (dadosSalvos) {
@@ -108,50 +113,5 @@
         return;
       }
 
-      lancamentos.push({ data, descricao, valor, tipo });
-      atualizarTabela();
-      limparCampos();
-    }
+      la
 
-    function atualizarTabela() {
-      const tabela = document.getElementById("tabela-lancamentos");
-      tabela.innerHTML = "";
-
-      let total = 0;
-      lancamentos.forEach((l, index) => {
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td>${new Date(l.data).toLocaleDateString('pt-BR')}</td>
-          <td>${l.descricao}</td>
-          <td class="${l.tipo}">${l.tipo}</td>
-          <td class="${l.tipo}">R$ ${l.valor.toFixed(2)}</td>
-          <td class="acoes">
-            <button onclick="removerLancamento(${index})">Excluir</button>
-          </td>
-        `;
-        tabela.appendChild(tr);
-
-        total += l.tipo === "entrada" ? l.valor : -l.valor;
-      });
-
-      const totalSpan = document.getElementById("total");
-      totalSpan.innerText = total.toFixed(2);
-      totalSpan.style.color = total >= 0 ? "green" : "red";
-
-      // Salvar no localStorage
-      localStorage.setItem("lancamentos", JSON.stringify(lancamentos));
-    }
-
-    function removerLancamento(index) {
-      lancamentos.splice(index, 1);
-      atualizarTabela();
-    }
-
-    function limparCampos() {
-      document.getElementById("data").value = "";
-      document.getElementById("descricao").value = "";
-      document.getElementById("valor").value = "";
-    }
-  </script>
-</body>
-</html>
