@@ -3,22 +3,18 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Calculadora de Preço - Semijoia</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <title>Fluxo de Caixa - A Gata Semijoias</title>
   <style>
-    * {
-      box-sizing: border-box;
-    }
     body {
       font-family: Arial, sans-serif;
-      padding: 20px;
+      background-color: #f7f7f7;
       margin: 0;
-      background-color: #f8f8f8;
+      padding: 20px;
     }
     .container {
-      max-width: 500px;
+      max-width: 800px;
       margin: auto;
-      background-color: white;
+      background: #fff;
       padding: 20px;
       border-radius: 8px;
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
@@ -26,154 +22,100 @@
     h1 {
       text-align: center;
       color: #d4af37;
-      font-size: 1.5rem;
     }
-    label {
-      margin-top: 15px;
-      font-weight: bold;
-    }
-    input, select {
+    input, select, button {
       width: 100%;
       padding: 10px;
-      margin-top: 5px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      font-size: 1rem;
+      margin: 8px 0;
+      box-sizing: border-box;
     }
-    input[type="file"] {
-      padding: 5px;
-    }
-    button {
-      background-color: #d4af37;
-      color: white;
-      padding: 12px;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
+    table {
       width: 100%;
-      margin-top: 20px;
-      font-size: 1rem;
-    }
-    button:hover {
-      background-color: #c49e30;
-    }
-    #lista-itens {
+      border-collapse: collapse;
       margin-top: 20px;
     }
-    .item {
-      margin-bottom: 20px;
-      border-bottom: 1px solid #ddd;
-      padding-bottom: 10px;
+    table, th, td {
+      border: 1px solid #ccc;
     }
-    .logo {
-      display: block;
-      margin: 0 auto 20px;
-      max-width: 100%;
-      height: auto;
+    th, td {
+      padding: 10px;
+      text-align: center;
     }
-    @media (max-width: 600px) {
-      h1 {
-        font-size: 1.2rem;
-      }
-      button, input, select {
-        font-size: 1rem;
-      }
-    }
+    .entrada { color: green; }
+    .saida { color: red; }
   </style>
 </head>
 <body>
   <div class="container">
-    <img src="https://raw.githubusercontent.com/edmeireas/calculadoraprata/main/logo.jpeg" alt="Logo A Gata Semijoias" class="logo">
-    <h1>Calculadora A Gata Semijoias</h1>
+    <h1>Fluxo de Caixa</h1>
+    <input type="date" id="data">
+    <input type="text" id="descricao" placeholder="Descrição">
+    <input type="number" id="valor" placeholder="Valor (R$)">
+    <select id="tipo">
+      <option value="entrada">Entrada</option>
+      <option value="saida">Saída</option>
+    </select>
+    <button onclick="adicionarLancamento()">Adicionar Lançamento</button>
 
-    <div id="lista-itens"></div>
+    <table>
+      <thead>
+        <tr>
+          <th>Data</th>
+          <th>Descrição</th>
+          <th>Tipo</th>
+          <th>Valor</th>
+        </tr>
+      </thead>
+      <tbody id="tabela-lancamentos"></tbody>
+    </table>
 
-    <button onclick="adicionarItem()">Adicionar Peça</button>
-    <button onclick="gerarPDF()">Gerar Orçamento em PDF</button>
+    <h2>Total: R$ <span id="total">0.00</span></h2>
   </div>
 
   <script>
-    let contador = 0;
+    let lancamentos = [];
 
-    function adicionarItem() {
-      const container = document.createElement('div');
-      container.className = 'item';
-      container.innerHTML = `
-        <label for="codigo_${contador}">Código da Peça:</label>
-        <input type="text" id="codigo_${contador}">
+    function adicionarLancamento() {
+      const data = document.getElementById("data").value;
+      const descricao = document.getElementById("descricao").value;
+      const valor = parseFloat(document.getElementById("valor").value);
+      const tipo = document.getElementById("tipo").value;
 
-        <label for="material_${contador}">Material:</label>
-        <select id="material_${contador}">
-          <option value="prata">Prata 5.0</option>
-          <option value="ouro_corrente">Ouro Corrente</option>
-          <option value="ouro_brincos">Ouro Brincos</option>
-        </select>
-
-        <label for="peso_${contador}">Peso da Peça (g):</label>
-        <input type="number" id="peso_${contador}" step="0.01">
-
-        <label for="bruto_${contador}">Custo do Bruto (R$):</label>
-        <input type="number" id="bruto_${contador}" step="0.01">
-
-        <label for="foto_${contador}">Foto da Peça:</label>
-        <input type="file" id="foto_${contador}" accept="image/*">
-
-        <div id="resultado_${contador}"></div>
-      `;
-
-      document.getElementById("lista-itens").appendChild(container);
-      contador++;
-    }
-
-    async function gerarPDF() {
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF();
-      let y = 20;
-
-      for (let i = 0; i < contador; i++) {
-        const codigo = document.getElementById(`codigo_${i}`).value;
-        const material = document.getElementById(`material_${i}`).value;
-        const peso = parseFloat(document.getElementById(`peso_${i}`).value) || 0;
-        const bruto = parseFloat(document.getElementById(`bruto_${i}`).value) || 0;
-        const file = document.getElementById(`foto_${i}`).files[0];
-
-        let precoGrama = 0;
-        if (material === "prata") precoGrama = 1.70;
-        else if (material === "ouro_corrente") precoGrama = 6.18;
-        else if (material === "ouro_brincos") precoGrama = 5.10;
-
-        const custoEmbalagem = 2.00;
-        const lucro = 3.0;
-        const custoMaterial = peso * precoGrama;
-        const custoTotal = custoMaterial + custoEmbalagem + bruto;
-        const precoFinal = custoTotal * lucro;
-
-        if (y > 250) {
-          doc.addPage();
-          y = 20;
-        }
-
-        doc.setFontSize(12);
-        if (codigo) doc.text(`Código: ${codigo}`, 20, y);
-        doc.text(`Peso: ${peso}g`, 20, y + 10);
-        doc.text(`Preço Final: R$ ${precoFinal.toFixed(2)}`, 20, y + 20);
-
-        if (file) {
-          const reader = new FileReader();
-          reader.onload = function(e) {
-            const imgData = e.target.result;
-            doc.addImage(imgData, 'JPEG', 120, y, 50, 50);
-            y += 70;
-            doc.save("orcamento-semijoias.pdf");
-          };
-          reader.readAsDataURL(file);
-          return;
-        } else {
-          y += 30;
-        }
+      if (!data || !descricao || isNaN(valor)) {
+        alert("Preencha todos os campos corretamente.");
+        return;
       }
 
-      doc.save("orcamento-semijoias.pdf");
+      lancamentos.push({ data, descricao, valor, tipo });
+      atualizarTabela();
+      limparCampos();
+    }
+
+    function atualizarTabela() {
+      const tabela = document.getElementById("tabela-lancamentos");
+      tabela.innerHTML = "";
+
+      let total = 0;
+      lancamentos.forEach(l => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${l.data}</td>
+          <td>${l.descricao}</td>
+          <td class="${l.tipo}">${l.tipo}</td>
+          <td class="${l.tipo}">R$ ${l.valor.toFixed(2)}</td>
+        `;
+        tabela.appendChild(tr);
+
+        total += l.tipo === "entrada" ? l.valor : -l.valor;
+      });
+
+      document.getElementById("total").innerText = total.toFixed(2);
+    }
+
+    function limparCampos() {
+      document.getElementById("data").value = "";
+      document.getElementById("descricao").value = "";
+      document.getElementById("valor").value = "";
     }
   </script>
 </body>
