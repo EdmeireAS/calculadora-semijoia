@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Fluxo de Caixa - A Gata Semijoias</title>
   <style>
     body {
@@ -43,14 +43,26 @@
     }
     .entrada { color: green; }
     .saida { color: red; }
+    .acoes button {
+      background-color: #d4af37;
+      color: white;
+      border: none;
+      padding: 5px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .acoes button:hover {
+      background-color: #b8992f;
+    }
   </style>
 </head>
 <body>
   <div class="container">
     <h1>Fluxo de Caixa</h1>
-    <input type="date" id="data">
-    <input type="text" id="descricao" placeholder="Descrição">
-    <input type="number" id="valor" placeholder="Valor (R$)">
+
+    <input type="date" id="data" />
+    <input type="text" id="descricao" placeholder="Descrição" />
+    <input type="number" id="valor" placeholder="Valor (R$)" />
     <select id="tipo">
       <option value="entrada">Entrada</option>
       <option value="saida">Saída</option>
@@ -64,6 +76,7 @@
           <th>Descrição</th>
           <th>Tipo</th>
           <th>Valor</th>
+          <th>Ação</th>
         </tr>
       </thead>
       <tbody id="tabela-lancamentos"></tbody>
@@ -74,6 +87,15 @@
 
   <script>
     let lancamentos = [];
+
+    // Carregar dados salvos ao iniciar
+    window.onload = function () {
+      const dadosSalvos = localStorage.getItem("lancamentos");
+      if (dadosSalvos) {
+        lancamentos = JSON.parse(dadosSalvos);
+        atualizarTabela();
+      }
+    };
 
     function adicionarLancamento() {
       const data = document.getElementById("data").value;
@@ -96,20 +118,33 @@
       tabela.innerHTML = "";
 
       let total = 0;
-      lancamentos.forEach(l => {
+      lancamentos.forEach((l, index) => {
         const tr = document.createElement("tr");
         tr.innerHTML = `
-          <td>${l.data}</td>
+          <td>${new Date(l.data).toLocaleDateString('pt-BR')}</td>
           <td>${l.descricao}</td>
           <td class="${l.tipo}">${l.tipo}</td>
           <td class="${l.tipo}">R$ ${l.valor.toFixed(2)}</td>
+          <td class="acoes">
+            <button onclick="removerLancamento(${index})">Excluir</button>
+          </td>
         `;
         tabela.appendChild(tr);
 
         total += l.tipo === "entrada" ? l.valor : -l.valor;
       });
 
-      document.getElementById("total").innerText = total.toFixed(2);
+      const totalSpan = document.getElementById("total");
+      totalSpan.innerText = total.toFixed(2);
+      totalSpan.style.color = total >= 0 ? "green" : "red";
+
+      // Salvar no localStorage
+      localStorage.setItem("lancamentos", JSON.stringify(lancamentos));
+    }
+
+    function removerLancamento(index) {
+      lancamentos.splice(index, 1);
+      atualizarTabela();
     }
 
     function limparCampos() {
