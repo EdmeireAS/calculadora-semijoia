@@ -113,5 +113,71 @@
         return;
       }
 
-      la
+      lancamentos.push({ data, descricao, valor, tipo });
+      atualizarTabela();
+      limparCampos();
+    }
 
+    function atualizarTabela() {
+      const tabela = document.getElementById("tabela-lancamentos");
+      tabela.innerHTML = "";
+
+      let total = 0;
+      lancamentos.forEach((l, index) => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${new Date(l.data).toLocaleDateString('pt-BR')}</td>
+          <td>${l.descricao}</td>
+          <td class="${l.tipo}">${l.tipo}</td>
+          <td class="${l.tipo}">R$ ${l.valor.toFixed(2)}</td>
+          <td class="acoes">
+            <button onclick="removerLancamento(${index})">Excluir</button>
+          </td>
+        `;
+        tabela.appendChild(tr);
+
+        total += l.tipo === "entrada" ? l.valor : -l.valor;
+      });
+
+      const totalSpan = document.getElementById("total");
+      totalSpan.innerText = total.toFixed(2);
+      totalSpan.style.color = total >= 0 ? "green" : "red";
+
+      // Salvar no localStorage
+      localStorage.setItem("lancamentos", JSON.stringify(lancamentos));
+    }
+
+    function removerLancamento(index) {
+      lancamentos.splice(index, 1);
+      atualizarTabela();
+    }
+
+    function limparCampos() {
+      document.getElementById("data").value = "";
+      document.getElementById("descricao").value = "";
+      document.getElementById("valor").value = "";
+    }
+
+    function exportarLancamentos() {
+      if (lancamentos.length === 0) {
+        alert("Nenhum lançamento para exportar.");
+        return;
+      }
+
+      let csv = "Data,Descrição,Tipo,Valor (R$)\n";
+      lancamentos.forEach(l => {
+        const dataBR = new Date(l.data).toLocaleDateString('pt-BR');
+        csv += `${dataBR},"${l.descricao}",${l.tipo},${l.valor.toFixed(2)}\n`;
+      });
+
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = "fluxo_caixa_a_gata_semijoias.csv";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  </script>
+</body>
+</html>
